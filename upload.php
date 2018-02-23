@@ -4,7 +4,7 @@ session_start();
 if(!$_SESSION['auth']){
 	header('location:login.php');
 }
-//upload logic
+//upload csv file to DB
 if($_POST){
 $target_dir = "uploads/";
 $target_file = $target_dir.basename($_FILES["fileToUpload"]["name"]);
@@ -13,55 +13,37 @@ $fileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
 // Check if csv is actuall csv 
 if(isset($_POST["submit"])) {
     $mimes = array('application/vnd.ms-excel','text/plain','text/csv','text/tsv');
-    if(in_array($_FILES['fileToUpload']['type'],$mimes)) {
-        echo "File is in CSV format.";
-        $uploadOk = 1;
-    } else {
-        echo "File is not in CSV format.";
-        $uploadOk = 0;
+    if(!in_array($_FILES['fileToUpload']['type'],$mimes) || $fileType != "csv") {
+		echo "Sorry, only CSV file is allowed.";
+		$uploadOk = 0;
     }
-}
-// Check if file already exists
-if (file_exists($target_file)) {
-    echo "Sorry, file already exists.";
-    $uploadOk = 0;
 }
 // Check file size
 if ($_FILES["fileToUpload"]["size"] > 50000000) {
     echo "Sorry, your file is too large.";
     $uploadOk = 0;
 }
-// Allow certain file formats
-if($fileType != "csv") {
-    echo "Sorry, only CSV file is allowed.";
-    $uploadOk = 0;
-}
-// Check if $uploadOk is set to 0 by an error
+// if Everything is ok, try to upload file
 if ($uploadOk == 0) {
     echo "Sorry, your file was not uploaded.";
-// if everything is ok, try to upload file
 } else {
     if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
-        echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
-		$host="localhost"; //DB host
-		$user="root";  //DB admin name
-		$pass="";  //DB admin password
+         echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
 		$db="sample_db"; //DB table
 		$db_table = "sample";
 		$uploadfile = $_FILES["fileToUpload"]["tmp_name"];
-		$conn=mysqli_connect($host, $user, $pass, $db);
-		echo $target_file;
+		$conn=mysqli_connect($_SESSION['host'], $_SESSION['user'], $_SESSION['pass'], $db);
 		$query="CREATE TABLE IF NOT EXISTS $db.$db_table (`COL 1` int(3), `COL 2` varchar(95), `COL 3` varchar(18), `COL 4` int(5), `COL 5` decimal(7,2), `COL 6` decimal(6,2), `COL 7` decimal(4,2), `COL 8` varchar(21), `COL 9` varchar(30), `COL 10` varchar(3)) DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;";
 		$load = "LOAD DATA LOCAL INFILE \"".addslashes (realpath($target_file))."\" INTO TABLE $db_table
 				FIELDS TERMINATED BY ',' 
 				ENCLOSED BY '\"' 
 				LINES TERMINATED BY '\r\n'";
-		echo "!!!!!";
-		echo $load;
+		//echo $load;
 		$result=mysqli_query($conn, $query) or trigger_error(mysqli_error()." ".$query);
 		$result=mysqli_query($conn, $load) or trigger_error(mysqli_error()." ".$load);
 		if($result){
 			echo "SUCCESSFULLY UPLOADED CSV INTO DB";
+			unlink($target_file); //clean up file
 		}
 		else{
 			echo $result;
@@ -81,7 +63,6 @@ if ($uploadOk == 0) {
 	//reference: https://www.youtube.com/watch?v=kJGbxoRir_4&t=2s
 	//https://www.youtube.com/watch?v=KXj-cZXoXZk
 }	
-
 ?>
 
 

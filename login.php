@@ -1,12 +1,13 @@
 <?php
 if($_POST){
-	$host="localhost"; //DB host
-	$user="root";  //DB admin name
-	$pass="";  //DB admin password
+	//user authentication
+	$_SESSION['host']="localhost"; //DB host
+	$_SESSION['user']="root";  //DB admin name
+	$_SESSION['pass']="";  //DB admin password
 	$db="auth"; //DB table
 	$username=$_POST['username'];
 	$password=$_POST['password'];
-	$conn=mysqli_connect($host, $user, $pass, $db);
+	$conn=mysqli_connect($_SESSION['host'], $_SESSION['user'], $_SESSION['pass'], $db);
 	$query="SELECT * from users where username='$username' and password='$password'";
 	$result=mysqli_query($conn, $query);
 	if(mysqli_num_rows($result)==1){
