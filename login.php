@@ -1,5 +1,6 @@
 <?php
 if($_POST){
+	session_start();
 	//user authentication
 	$_SESSION['host']="localhost"; //DB host
 	$_SESSION['user']="root";  //DB admin name
@@ -11,7 +12,6 @@ if($_POST){
 	$query="SELECT * from users where username='$username' and password='$password'";
 	$result=mysqli_query($conn, $query);
 	if(mysqli_num_rows($result)==1){
-		session_start();
 		$_SESSION['auth'] ='true';
 		header('location:upload.php');
 	}

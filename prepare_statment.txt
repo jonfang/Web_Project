@@ -1,0 +1,11 @@
+$mysqli = new mysqli('localhost', 'my_user', 'my_password', 'world');
+if (mysqli_connect_errno()) {
+    printf("Connect failed: %s\n", mysqli_connect_error());
+    exit();
+}
+$query = "INSERT INTO CountryLanguage VALUES (?, ?, ?, ?)";
+$stmt = $mysqli->prepare($query);
+$stmt->bind_param('sssd', $code, $language, $official, $percent);
+$stmt->execute();
+$stmt->close();
+$mysqli->close();
